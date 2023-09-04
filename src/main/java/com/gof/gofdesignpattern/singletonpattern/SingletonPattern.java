@@ -65,9 +65,16 @@ public class SingletonPattern {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("------------------------------");
 
         /**
          * Enum으로 싱글톤 생성해서 리플렉션 방지
+         * 단점은 미리 생성된다는 점
+         * 또한 상속이 불가능하다.
+         * 상속 & Lazy Loading을 구현하고 싶으면 Static Inner Class가 제일 무난하다.
+         * 이 방법은 직렬화 역직렬화에 굉장히 안전함
+         * Enum은 Serializable을 구현하는 클래스
+         * 별다른 장치 없이 역직렬화 가능
          * **/
 
         /**
@@ -84,5 +91,35 @@ public class SingletonPattern {
         System.out.println("reflection");
         System.out.println(setting5 == setting6);
 
+        System.out.println("------------------------------");
+        // Enum 방식의 추가 설명
+        // 이러면 리플렉션 안에서 생성을 막는다.
+        // Enum은 리플렉션에서 생성자를 사용할 수 없도록 막아놨다.
+        SettingEnum settingEnum = SettingEnum.INSTANCE;
+
+        SettingEnum settingEnum1 = null;
+
+        Constructor<?>[] declaredConstructors = SettingEnum.class.getDeclaredConstructors();
+        for (Constructor<?> constructor : declaredConstructors) {
+            constructor.setAccessible(true);
+            settingEnum1 = (SettingEnum)constructor.newInstance("INSTANCE");
+
+        }
+        System.out.println(settingEnum == settingEnum1);
     }
+
+    /**
+     * 결론
+     * 싱글톤을 안전하게 구현하는 최종 방법 두 가지
+     * 1. Enum으로 구현
+     * 2. Static inner Class( Holder Class )
+     **/
+
+    /**
+     * 싱글톤 패턴이 쓰이는 곳
+     * 1. 런타임 인스턴스 => 자바 애플리케이션이 실행되고 있는 환경
+     * 2. Spring Bean Application Context -> 빈 생성시 싱글톤으로 생성, 인스턴스를 한 개로 관리,
+     *      싱글톤 패턴이라고 보기는 힘들지만 싱글톤 스코프로는 사용
+     * 3. 다른 디자인 패턴 (빌더, 퍼사드, 추상 팰토리 등) 구현체의 일부로 쓰인다.
+     * **/
 }
